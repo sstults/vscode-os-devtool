@@ -1,0 +1,163 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OpenSearch DevTools",
+  "scopeName": "source.osdev",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#request" },
+    { "include": "#json" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.osdev",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.osdev",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "request": {
+      "patterns": [
+        {
+          "name": "meta.request.osdev",
+          "match": "^\\s*(GET|POST|PUT|DELETE|HEAD|PATCH|OPTIONS)\\s+(.*)$",
+          "captures": {
+            "1": { "name": "keyword.control.method.osdev" },
+            "2": { "patterns": [{ "include": "#path" }] }
+          }
+        }
+      ]
+    },
+    "path": {
+      "patterns": [
+        {
+          "name": "meta.path.osdev",
+          "match": "([^?\\s]+)(\\?.*)?",
+          "captures": {
+            "1": { "name": "string.unquoted.path.osdev" },
+            "2": { "patterns": [{ "include": "#query-string" }] }
+          }
+        }
+      ]
+    },
+    "query-string": {
+      "patterns": [
+        {
+          "name": "meta.query-string.osdev",
+          "match": "(\\?)([^=&]+)(=?)([^&]*)",
+          "captures": {
+            "1": { "name": "punctuation.separator.question.osdev" },
+            "2": { "name": "variable.parameter.osdev" },
+            "3": { "name": "punctuation.separator.equals.osdev" },
+            "4": { "name": "string.unquoted.value.osdev" }
+          }
+        },
+        {
+          "name": "meta.query-param.osdev",
+          "match": "(&)([^=&]+)(=?)([^&]*)",
+          "captures": {
+            "1": { "name": "punctuation.separator.ampersand.osdev" },
+            "2": { "name": "variable.parameter.osdev" },
+            "3": { "name": "punctuation.separator.equals.osdev" },
+            "4": { "name": "string.unquoted.value.osdev" }
+          }
+        }
+      ]
+    },
+    "json": {
+      "patterns": [
+        { "include": "#json-object" },
+        { "include": "#json-array" }
+      ]
+    },
+    "json-object": {
+      "name": "meta.structure.dictionary.json.osdev",
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.dictionary.begin.json.osdev" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.dictionary.end.json.osdev" }
+      },
+      "patterns": [
+        { "include": "#json-key" },
+        { "include": "#json-value" },
+        {
+          "name": "punctuation.separator.dictionary.pair.json.osdev",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.dictionary.json.osdev",
+          "match": ","
+        }
+      ]
+    },
+    "json-array": {
+      "name": "meta.structure.array.json.osdev",
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.array.begin.json.osdev" }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.array.end.json.osdev" }
+      },
+      "patterns": [
+        { "include": "#json-value" },
+        {
+          "name": "punctuation.separator.array.json.osdev",
+          "match": ","
+        }
+      ]
+    },
+    "json-key": {
+      "name": "support.type.property-name.json.osdev",
+      "match": "\"[^\"]*\"(?=\\s*:)"
+    },
+    "json-value": {
+      "patterns": [
+        { "include": "#json-string" },
+        { "include": "#json-number" },
+        { "include": "#json-boolean" },
+        { "include": "#json-null" },
+        { "include": "#json-object" },
+        { "include": "#json-array" }
+      ]
+    },
+    "json-string": {
+      "name": "string.quoted.double.json.osdev",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.json.osdev" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.json.osdev" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.json.osdev",
+          "match": "\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4})"
+        }
+      ]
+    },
+    "json-number": {
+      "name": "constant.numeric.json.osdev",
+      "match": "-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?"
+    },
+    "json-boolean": {
+      "name": "constant.language.boolean.json.osdev",
+      "match": "\\b(true|false)\\b"
+    },
+    "json-null": {
+      "name": "constant.language.null.json.osdev",
+      "match": "\\bnull\\b"
+    }
+  }
+}

@@ -1,0 +1,442 @@
+# VS Code OpenSearch DevTools Extension - Agent Instructions
+
+## Project Overview
+
+This is a VS Code extension that provides an OpenSearch DevTools-like experience. Users can write, execute, and save OpenSearch queries with IntelliSense support.
+
+### Key Features
+- Custom `.osdev` file type for writing OpenSearch queries
+- Multiple connection management (AWS IAM and Basic Auth)
+- IntelliSense for OpenSearch REST API
+- Query execution with results in output panel
+- SSL/TLS support including self-signed certificates
+- Save query output as JSON or text
+
+### Target OpenSearch Version
+OpenSearch 2.11 and later
+
+---
+
+## Architecture
+
+```
+src/
+├── extension.ts             # Main entry point, activation
+├── language/
+│   ├── osdevLanguage.ts     # Language configuration
+│   ├── completionProvider.ts # IntelliSense autocomplete
+│   ├── hoverProvider.ts     # Hover documentation
+│   └── parser.ts            # Parse .osdev file format
+├── connections/
+│   ├── connectionManager.ts # Connection CRUD + storage
+│   ├── connectionTypes.ts   # TypeScript interfaces
+│   ├── basicAuth.ts         # Basic auth handler
+│   └── awsAuth.ts           # AWS IAM/SigV4 signing
+├── execution/
+│   ├── queryExecutor.ts     # Send queries to OpenSearch
+│   ├── responseHandler.ts   # Parse and format responses
+│   └── outputPanel.ts       # Results display
+├── commands/
+│   └── commands.ts          # All registered commands
+└── utils/
+    ├── httpClient.ts        # HTTPS with custom certs
+    └── config.ts            # Settings management
+```
+
+---
+
+## File Format (.osdev)
+
+The `.osdev` file format follows OpenSearch DevTools console format:
+
+```
+// Single line comment
+/* Multi-line
+   comment */
+
+// Simple GET request
+GET /_cat/indices?v
+
+// POST with JSON body
+POST /my-index/_search
+{
+  "query": {
+    "match": {
+      "title": "opensearch"
+    }
+  }
+}
+
+// PUT request
+PUT /my-index
+{
+  "settings": {
+    "number_of_shards": 1
+  }
+}
+```
+
+### Parsing Rules
+1. Lines starting with HTTP method (GET, POST, PUT, DELETE, HEAD, PATCH) begin a new request
+2. The path follows the method on the same line
+3. JSON body (if any) follows on subsequent lines until the next request or end of file
+4. Comments are `//` for single line, `/* */` for multi-line
+5. Blank lines are ignored
+
+---
+
+## Connection Management
+
+### Connection Data Model
+```typescript
+interface OpenSearchConnection {
+  id: string;           // UUID
+  name: string;         // Display name
+  url: string;          // Base URL (e.g., https://localhost:9200)
+  authType: 'basic' | 'aws-iam';
+  
+  // For Basic Auth (stored in SecretStorage)
+  username?: string;
+  password?: string;    // NEVER store in settings
+  
+  // For AWS IAM
+  awsRegion?: string;
+  awsProfile?: string;  // Named profile from ~/.aws/credentials
+  awsAccessKeyId?: string;     // Optional, stored in SecretStorage
+  awsSecretAccessKey?: string; // Optional, stored in SecretStorage
+  
+  // SSL/TLS
+  sslVerify: boolean;           // Verify SSL certificates
+  caCertPath?: string;          // Path to custom CA certificate
+}
+```
+
+### Storage Strategy
+- **Non-sensitive data** (name, URL, authType, awsRegion, awsProfile, sslVerify, caCertPath): Store in VS Code settings (globalState or workspace settings)
+- **Sensitive data** (password, awsAccessKeyId, awsSecretAccessKey): Store in VS Code SecretStorage API
+
+### Commands
+- `osdev.addConnection` - Add new connection
+- `osdev.editConnection` - Edit existing connection
+- `osdev.deleteConnection` - Delete connection
+- `osdev.switchConnection` - Quick pick to switch active connection
+- `osdev.testConnection` - Test current connection
+
+---
+
+## Authentication Implementation
+
+### Basic Auth
+Use standard HTTP Basic Authentication header:
+```typescript
+const auth = Buffer.from(`${username}:${password}`).toString('base64');
+headers['Authorization'] = `Basic ${auth}`;
+```
+
+### AWS IAM (SigV4)
+Use the `@smithy/signature-v4` package for signing requests:
+```typescript
+import { SignatureV4 } from '@smithy/signature-v4';
+import { Sha256 } from '@aws-crypto/sha256-js';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
+```
+
+For named profiles, use:
+```typescript
+import { fromIni } from '@aws-sdk/credential-provider-ini';
+const credentials = fromIni({ profile: 'my-profile' });
+```
+
+---
+
+## IntelliSense Implementation
+
+### Data Source
+The OpenSearch REST API specification should be fetched at build time:
+- Source: https://github.com/opensearch-project/opensearch-api-specification
+- Generate a JSON schema file at `schemas/opensearch-api.json`
+
+### Build Script (`scripts/fetch-api-spec.ts`)
+1. Clone or fetch the OpenSearch API specification
+2. Parse the OpenAPI/Smithy spec
+3. Generate a simplified JSON schema for:
+   - All endpoints with their HTTP methods
+   - Query parameters for each endpoint
+   - Request body schemas
+   - Response schemas (for documentation)
+
+### Completion Provider
+Provide completions for:
+1. HTTP methods (GET, POST, PUT, DELETE, HEAD, PATCH)
+2. API endpoints (/_search, /_cat/indices, etc.)
+3. Query parameters (?v, ?pretty, etc.)
+4. Query DSL keywords (query, bool, match, term, etc.)
+5. Field names (when possible from mappings)
+
+---
+
+## Query Execution
+
+### Execution Flow
+1. Parse the `.osdev` file to extract requests
+2. Identify the request under cursor (or selected requests)
+3. Get active connection configuration
+4. Build HTTP request with appropriate auth
+5. Send request to OpenSearch
+6. Display response in output panel
+
+### Output Panel
+- Use VS Code OutputChannel for results
+- Format JSON responses with proper indentation
+- Show request metadata (method, path, status code, time)
+- Provide command to save output to file
+
+### Commands
+- `osdev.executeRequest` - Execute request under cursor
+- `osdev.executeAllRequests` - Execute all requests in file
+- `osdev.saveOutput` - Save last output to file
+- `osdev.clearOutput` - Clear output panel
+
+---
+
+## SSL/TLS Configuration
+
+### Implementation
+```typescript
+import https from 'https';
+import fs from 'fs';
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: connection.sslVerify,
+  ca: connection.caCertPath ? fs.readFileSync(connection.caCertPath) : undefined
+});
+```
+
+---
+
+## Testing Requirements
+
+### Unit Tests (Vitest)
+Test all modules in isolation:
+- `parser.test.ts` - Test .osdev file parsing
+- `connectionManager.test.ts` - Test connection CRUD
+- `basicAuth.test.ts` - Test Basic Auth header generation
+- `awsAuth.test.ts` - Test AWS SigV4 signing
+- `completionProvider.test.ts` - Test IntelliSense completions
+- `queryExecutor.test.ts` - Test query execution (with mocked HTTP)
+
+### Integration Tests
+Use VS Code Extension Test framework:
+- Test extension activation
+- Test command registration
+- Test language features in editor
+- Test connection management UI
+
+### Test Coverage Target
+Aim for >80% code coverage on core modules.
+
+---
+
+## VS Code APIs to Use
+
+### Extension Basics
+```typescript
+import * as vscode from 'vscode';
+
+// Activation
+export function activate(context: vscode.ExtensionContext) {
+  // Register providers, commands, etc.
+}
+```
+
+### Language Features
+```typescript
+// Register language
+vscode.languages.registerCompletionItemProvider('osdev', provider);
+vscode.languages.registerHoverProvider('osdev', hoverProvider);
+
+// Language configuration
+vscode.languages.setLanguageConfiguration('osdev', {
+  comments: { lineComment: '//', blockComment: ['/*', '*/'] },
+  brackets: [['{', '}'], ['[', ']']],
+  autoClosingPairs: [
+    { open: '{', close: '}' },
+    { open: '[', close: ']' },
+    { open: '"', close: '"' }
+  ]
+});
+```
+
+### Storage
+```typescript
+// Settings (non-sensitive)
+const config = vscode.workspace.getConfiguration('osdev');
+await config.update('connections', connections, vscode.ConfigurationTarget.Global);
+
+// Secrets (sensitive)
+await context.secrets.store('osdev.password.' + connectionId, password);
+const password = await context.secrets.get('osdev.password.' + connectionId);
+```
+
+### Output
+```typescript
+const outputChannel = vscode.window.createOutputChannel('OpenSearch');
+outputChannel.appendLine(JSON.stringify(response, null, 2));
+outputChannel.show();
+```
+
+### Status Bar
+```typescript
+const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+statusBarItem.text = `$(database) ${connectionName}`;
+statusBarItem.command = 'osdev.switchConnection';
+statusBarItem.show();
+```
+
+---
+
+## Package.json Configuration
+
+### Key Sections
+```json
+{
+  "name": "vscode-opensearch-devtools",
+  "displayName": "OpenSearch DevTools",
+  "description": "OpenSearch DevTools-like experience in VS Code",
+  "version": "0.1.0",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Other"],
+  "activationEvents": [
+    "onLanguage:osdev",
+    "onCommand:osdev.addConnection"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [{
+      "id": "osdev",
+      "aliases": ["OpenSearch DevTools", "osdev"],
+      "extensions": [".osdev"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "osdev",
+      "scopeName": "source.osdev",
+      "path": "./syntaxes/osdev.tmLanguage.json"
+    }],
+    "commands": [
+      { "command": "osdev.executeRequest", "title": "Execute Request", "category": "OpenSearch" },
+      { "command": "osdev.addConnection", "title": "Add Connection", "category": "OpenSearch" },
+      { "command": "osdev.switchConnection", "title": "Switch Connection", "category": "OpenSearch" }
+    ],
+    "configuration": {
+      "title": "OpenSearch DevTools",
+      "properties": {
+        "osdev.connections": {
+          "type": "array",
+          "default": [],
+          "description": "OpenSearch connections"
+        },
+        "osdev.activeConnectionId": {
+          "type": "string",
+          "default": "",
+          "description": "Active connection ID"
+        }
+      }
+    },
+    "keybindings": [{
+      "command": "osdev.executeRequest",
+      "key": "ctrl+enter",
+      "mac": "cmd+enter",
+      "when": "editorLangId == osdev"
+    }]
+  }
+}
+```
+
+---
+
+## Development Workflow
+
+### Setup
+```bash
+npm install
+```
+
+### Build
+```bash
+npm run build        # Production build
+npm run watch        # Development watch mode
+```
+
+### Test
+```bash
+npm test             # Run all tests
+npm run test:unit    # Run unit tests only
+npm run test:coverage # Run with coverage
+```
+
+### Run Extension
+Press F5 in VS Code to launch Extension Development Host
+
+### Package
+```bash
+npm run package      # Create .vsix file
+```
+
+---
+
+## Dependencies
+
+### Runtime
+- `@aws-sdk/signature-v4` - AWS SigV4 signing
+- `@aws-sdk/credential-provider-node` - AWS credential loading
+- `@aws-crypto/sha256-js` - SHA256 for SigV4
+- `uuid` - Generate connection IDs
+
+### Development
+- `typescript`
+- `esbuild`
+- `@types/vscode`
+- `@types/node`
+- `vitest`
+- `@vscode/test-electron`
+- `eslint`
+- `prettier`
+
+---
+
+## Resources
+
+- [VS Code Extension API](https://code.visualstudio.com/api)
+- [VS Code Language Extensions](https://code.visualstudio.com/api/language-extensions/overview)
+- [OpenSearch REST API](https://opensearch.org/docs/latest/api-reference/)
+- [OpenSearch API Specification](https://github.com/opensearch-project/opensearch-api-specification)
+- [AWS SigV4 Signing](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
+- [TextMate Grammars](https://macromates.com/manual/en/language_grammars)
+
+---
+
+## Implementation Order
+
+1. **Project scaffolding** - package.json, tsconfig, build config
+2. **Language support** - .osdev file type, syntax highlighting
+3. **Connection management** - Add, edit, delete, switch connections
+4. **Query execution** - Parse and execute requests
+5. **Basic IntelliSense** - HTTP methods, common endpoints
+6. **Authentication** - Basic Auth, then AWS IAM
+7. **SSL/TLS support** - Custom certs, self-signed
+8. **Enhanced IntelliSense** - Full API spec, Query DSL
+9. **Testing** - Unit tests, integration tests
+10. **Documentation** - README, CHANGELOG
+
+---
+
+## Code Style
+
+- Use TypeScript strict mode
+- Use async/await over callbacks
+- Use meaningful variable names
+- Add JSDoc comments for public APIs
+- Keep functions small and focused
+- Handle errors gracefully with user-friendly messages
+- Use VS Code's built-in icons where possible ($(icon-name))

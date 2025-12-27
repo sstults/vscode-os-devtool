@@ -1,0 +1,244 @@
+// OpenSearch DevTools Example File
+// This file demonstrates the .osdev file format
+
+// ===========================================
+// Cluster Information
+// ===========================================
+
+// Get cluster health
+GET /_cluster/health
+
+// Get cluster stats
+GET /_cluster/stats
+
+// Get node information
+GET /_nodes
+
+// ===========================================
+// Index Operations
+// ===========================================
+
+// List all indices
+GET /_cat/indices?v
+
+// Create a new index with settings
+PUT /my-products
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "description": {
+        "type": "text"
+      },
+      "price": {
+        "type": "float"
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "in_stock": {
+        "type": "boolean"
+      }
+    }
+  }
+}
+
+// Get index mapping
+GET /my-products/_mapping
+
+// Get index settings
+GET /my-products/_settings
+
+// ===========================================
+// Document Operations
+// ===========================================
+
+// Index a document with auto-generated ID
+POST /my-products/_doc
+{
+  "name": "Wireless Headphones",
+  "description": "High-quality wireless headphones with noise cancellation",
+  "price": 149.99,
+  "category": "electronics",
+  "created_at": "2024-01-15",
+  "in_stock": true
+}
+
+// Index a document with specific ID
+PUT /my-products/_doc/1
+{
+  "name": "Mechanical Keyboard",
+  "description": "RGB mechanical keyboard with Cherry MX switches",
+  "price": 129.99,
+  "category": "electronics",
+  "created_at": "2024-01-10",
+  "in_stock": true
+}
+
+// Get a document by ID
+GET /my-products/_doc/1
+
+// Update a document
+POST /my-products/_update/1
+{
+  "doc": {
+    "price": 119.99,
+    "in_stock": false
+  }
+}
+
+// Delete a document
+DELETE /my-products/_doc/1
+
+// ===========================================
+// Search Queries
+// ===========================================
+
+// Simple match query
+POST /my-products/_search
+{
+  "query": {
+    "match": {
+      "name": "headphones"
+    }
+  }
+}
+
+// Match with options
+POST /my-products/_search
+{
+  "query": {
+    "match": {
+      "description": {
+        "query": "wireless noise",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+// Bool query with must, should, filter
+POST /my-products/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "category": "electronics"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "price": {
+              "gte": 50,
+              "lte": 200
+            }
+          }
+        },
+        {
+          "term": {
+            "in_stock": true
+          }
+        }
+      ],
+      "should": [
+        {
+          "match": {
+            "description": "wireless"
+          }
+        }
+      ]
+    }
+  }
+}
+
+// Search with aggregations
+POST /my-products/_search
+{
+  "size": 0,
+  "aggs": {
+    "categories": {
+      "terms": {
+        "field": "category"
+      }
+    },
+    "avg_price": {
+      "avg": {
+        "field": "price"
+      }
+    },
+    "price_ranges": {
+      "range": {
+        "field": "price",
+        "ranges": [
+          { "to": 50 },
+          { "from": 50, "to": 100 },
+          { "from": 100, "to": 200 },
+          { "from": 200 }
+        ]
+      }
+    }
+  }
+}
+
+// Search with highlighting
+POST /my-products/_search
+{
+  "query": {
+    "match": {
+      "description": "wireless"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "description": {}
+    }
+  }
+}
+
+// Search with sorting and pagination
+POST /my-products/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    { "price": "asc" },
+    { "created_at": "desc" }
+  ],
+  "from": 0,
+  "size": 10
+}
+
+// ===========================================
+// Bulk Operations
+// ===========================================
+
+// Bulk index multiple documents
+POST /_bulk
+{"index": {"_index": "my-products"}}
+{"name": "USB-C Cable", "price": 12.99, "category": "accessories"}
+{"index": {"_index": "my-products"}}
+{"name": "Mouse Pad", "price": 19.99, "category": "accessories"}
+{"index": {"_index": "my-products"}}
+{"name": "Monitor Stand", "price": 49.99, "category": "accessories"}
+
+// ===========================================
+// Cleanup
+// ===========================================
+
+// Delete the index (uncomment to use)
+// DELETE /my-products

@@ -1,0 +1,260 @@
+{
+  "name": "vscode-opensearch-devtools",
+  "displayName": "OpenSearch DevTools",
+  "description": "OpenSearch DevTools-like experience in VS Code - write, execute, and save OpenSearch queries with IntelliSense",
+  "version": "0.1.0",
+  "publisher": "opensearch-devtools",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sstults/vscode-os-devtool"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "opensearch",
+    "elasticsearch",
+    "devtools",
+    "query",
+    "search"
+  ],
+  "activationEvents": [
+    "onLanguage:osdev"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "osdev",
+        "aliases": [
+          "OpenSearch DevTools",
+          "osdev"
+        ],
+        "extensions": [
+          ".osdev"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "osdev",
+        "scopeName": "source.osdev",
+        "path": "./syntaxes/osdev.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "osdev.executeRequest",
+        "title": "Execute Request",
+        "category": "OpenSearch",
+        "icon": "$(play)"
+      },
+      {
+        "command": "osdev.executeAllRequests",
+        "title": "Execute All Requests",
+        "category": "OpenSearch",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "osdev.addConnection",
+        "title": "Add Connection",
+        "category": "OpenSearch",
+        "icon": "$(add)"
+      },
+      {
+        "command": "osdev.editConnection",
+        "title": "Edit Connection",
+        "category": "OpenSearch",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "osdev.deleteConnection",
+        "title": "Delete Connection",
+        "category": "OpenSearch",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "osdev.switchConnection",
+        "title": "Switch Connection",
+        "category": "OpenSearch",
+        "icon": "$(database)"
+      },
+      {
+        "command": "osdev.testConnection",
+        "title": "Test Connection",
+        "category": "OpenSearch",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "osdev.saveOutput",
+        "title": "Save Output",
+        "category": "OpenSearch",
+        "icon": "$(save)"
+      },
+      {
+        "command": "osdev.clearOutput",
+        "title": "Clear Output",
+        "category": "OpenSearch",
+        "icon": "$(clear-all)"
+      }
+    ],
+    "configuration": {
+      "title": "OpenSearch DevTools",
+      "properties": {
+        "osdev.connections": {
+          "type": "array",
+          "default": [],
+          "description": "OpenSearch connections (sensitive data stored separately in SecretStorage)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique connection ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Display name for the connection"
+              },
+              "url": {
+                "type": "string",
+                "description": "OpenSearch cluster URL (e.g., https://localhost:9200)"
+              },
+              "authType": {
+                "type": "string",
+                "enum": [
+                  "basic",
+                  "aws-iam"
+                ],
+                "description": "Authentication type"
+              },
+              "username": {
+                "type": "string",
+                "description": "Username for Basic Auth"
+              },
+              "awsRegion": {
+                "type": "string",
+                "description": "AWS region for IAM auth"
+              },
+              "awsProfile": {
+                "type": "string",
+                "description": "AWS profile name from ~/.aws/credentials"
+              },
+              "sslVerify": {
+                "type": "boolean",
+                "default": true,
+                "description": "Verify SSL certificates"
+              },
+              "caCertPath": {
+                "type": "string",
+                "description": "Path to custom CA certificate file"
+              }
+            }
+          }
+        },
+        "osdev.activeConnectionId": {
+          "type": "string",
+          "default": "",
+          "description": "ID of the currently active connection"
+        },
+        "osdev.outputFormat": {
+          "type": "string",
+          "enum": [
+            "json",
+            "raw"
+          ],
+          "default": "json",
+          "description": "Default output format for query results"
+        },
+        "osdev.prettyPrintJson": {
+          "type": "boolean",
+          "default": true,
+          "description": "Pretty print JSON responses"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "osdev.executeRequest",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorLangId == osdev"
+      },
+      {
+        "command": "osdev.executeAllRequests",
+        "key": "ctrl+shift+enter",
+        "mac": "cmd+shift+enter",
+        "when": "editorLangId == osdev"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "osdev.executeRequest",
+          "when": "editorLangId == osdev",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "osdev.executeRequest",
+          "when": "editorLangId == osdev",
+          "group": "opensearch@1"
+        },
+        {
+          "command": "osdev.executeAllRequests",
+          "when": "editorLangId == osdev",
+          "group": "opensearch@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.config.js",
+    "watch": "node esbuild.config.js --watch",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint src --ext ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "node ./out/test/runTest.js",
+    "pretest:integration": "tsc -p ./tsconfig.test.json",
+    "fetch-api-spec": "ts-node scripts/fetch-api-spec.ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/credential-provider-ini": "^3.374.0",
+    "@aws-sdk/credential-provider-node": "^3.374.0",
+    "@smithy/signature-v4": "^2.0.0",
+    "@smithy/protocol-http": "^3.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "esbuild": "^0.19.8",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.0"
+  }
+}
