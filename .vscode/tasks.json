@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "watch",
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+): (error|warning): (.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[watch\\] build",
+          "endsPattern": "^\\[watch\\] (build finished|watching for changes)"
+        }
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "npm: watch"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "label": "npm: build"
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "label": "npm: lint"
+    },
+    {
+      "type": "npm",
+      "script": "test:unit",
+      "problemMatcher": [],
+      "label": "npm: test:unit"
+    },
+    {
+      "type": "npm",
+      "script": "pretest:integration",
+      "problemMatcher": ["$tsc"],
+      "label": "npm: pretest:integration"
+    }
+  ]
+}
