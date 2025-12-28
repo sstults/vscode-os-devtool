@@ -16,6 +16,7 @@ vi.mock('fs', () => ({
 }));
 
 // Get the mocked vscode module
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const mockVscode = await vi.importMock<typeof import('vscode')>('vscode');
 
 describe('OutputPanel', () => {
@@ -295,6 +296,7 @@ describe('OutputPanel', () => {
 
       expect(mockVscode.window.showSaveDialog).toHaveBeenCalledWith(
         expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           filters: expect.objectContaining({
             'JSON files': ['json'],
             'Text files': ['txt'],
@@ -396,6 +398,7 @@ describe('OutputPanel', () => {
       );
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.writeFileSync).mockImplementation(() => {
+        // eslint-disable-next-line no-throw-literal
         throw 'string error';
       });
 

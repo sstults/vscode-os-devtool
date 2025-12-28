@@ -231,7 +231,8 @@
     "pretest:integration": "tsc -p ./tsconfig.test.json",
     "fetch-api-spec": "ts-node scripts/fetch-api-spec.ts",
     "package": "vsce package",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-crypto/sha256-js": "^5.2.0",
@@ -252,6 +253,7 @@
     "@vscode/vsce": "^2.22.0",
     "esbuild": "^0.27.2",
     "eslint": "^8.55.0",
+    "husky": "^9.1.7",
     "prettier": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.2",
