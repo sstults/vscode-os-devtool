@@ -1,27 +1,27 @@
-// OpenSearch DevTools Example File
-// This file demonstrates the .osdev file format
+# OpenSearch DevTools Example File
+# This file demonstrates the .osdev file format
 
-// ===========================================
-// Cluster Information
-// ===========================================
+# ===========================================
+# Cluster Information
+# ===========================================
 
-// Get cluster health
+# Get cluster health
 GET /_cluster/health
 
-// Get cluster stats
+# Get cluster stats
 GET /_cluster/stats
 
-// Get node information
+# Get node information
 GET /_nodes
 
-// ===========================================
-// Index Operations
-// ===========================================
+# ===========================================
+# Index Operations
+# ===========================================
 
-// List all indices
+# List all indices
 GET /_cat/indices?v
 
-// Create a new index with settings
+# Create a new index with settings
 PUT /my-products
 {
   "settings": {
@@ -53,17 +53,17 @@ PUT /my-products
   }
 }
 
-// Get index mapping
+# Get index mapping
 GET /my-products/_mapping
 
-// Get index settings
+# Get index settings
 GET /my-products/_settings
 
-// ===========================================
-// Document Operations
-// ===========================================
+# ===========================================
+# Document Operations
+# ===========================================
 
-// Index a document with auto-generated ID
+# Index a document with auto-generated ID
 POST /my-products/_doc
 {
   "name": "Wireless Headphones",
@@ -74,7 +74,7 @@ POST /my-products/_doc
   "in_stock": true
 }
 
-// Index a document with specific ID
+# Index a document with specific ID
 PUT /my-products/_doc/1
 {
   "name": "Mechanical Keyboard",
@@ -85,10 +85,10 @@ PUT /my-products/_doc/1
   "in_stock": true
 }
 
-// Get a document by ID
+# Get a document by ID
 GET /my-products/_doc/1
 
-// Update a document
+# Update a document
 POST /my-products/_update/1
 {
   "doc": {
@@ -97,14 +97,14 @@ POST /my-products/_update/1
   }
 }
 
-// Delete a document
+# Delete a document
 DELETE /my-products/_doc/1
 
-// ===========================================
-// Search Queries
-// ===========================================
+# ===========================================
+# Search Queries
+# ===========================================
 
-// Simple match query
+# Simple match query
 POST /my-products/_search
 {
   "query": {
@@ -114,7 +114,7 @@ POST /my-products/_search
   }
 }
 
-// Match with options
+# Match with options
 POST /my-products/_search
 {
   "query": {
@@ -127,7 +127,7 @@ POST /my-products/_search
   }
 }
 
-// Bool query with must, should, filter
+# Bool query with must, should, filter
 POST /my-products/_search
 {
   "query": {
@@ -165,7 +165,7 @@ POST /my-products/_search
   }
 }
 
-// Search with aggregations
+# Search with aggregations
 POST /my-products/_search
 {
   "size": 0,
@@ -194,7 +194,7 @@ POST /my-products/_search
   }
 }
 
-// Search with highlighting
+# Search with highlighting
 POST /my-products/_search
 {
   "query": {
@@ -209,7 +209,7 @@ POST /my-products/_search
   }
 }
 
-// Search with sorting and pagination
+# Search with sorting and pagination
 POST /my-products/_search
 {
   "query": {
@@ -223,11 +223,11 @@ POST /my-products/_search
   "size": 10
 }
 
-// ===========================================
-// Bulk Operations
-// ===========================================
+# ===========================================
+# Bulk Operations
+# ===========================================
 
-// Bulk index multiple documents
+# Bulk index multiple documents
 POST /_bulk
 {"index": {"_index": "my-products"}}
 {"name": "USB-C Cable", "price": 12.99, "category": "accessories"}
@@ -236,9 +236,9 @@ POST /_bulk
 {"index": {"_index": "my-products"}}
 {"name": "Monitor Stand", "price": 49.99, "category": "accessories"}
 
-// ===========================================
-// Cleanup
-// ===========================================
+# ===========================================
+# Cleanup
+# ===========================================
 
-// Delete the index (uncomment to use)
-// DELETE /my-products
+# Delete the index (uncomment to use)
+# DELETE /my-products

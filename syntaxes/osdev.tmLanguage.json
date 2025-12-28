@@ -11,13 +11,8 @@
     "comments": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.osdev",
-          "match": "//.*$"
-        },
-        {
-          "name": "comment.block.osdev",
-          "begin": "/\\*",
-          "end": "\\*/"
+          "name": "comment.line.number-sign.osdev",
+          "match": "#.*$"
         }
       ]
     },

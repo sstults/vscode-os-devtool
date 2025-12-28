@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
@@ -10,7 +11,13 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.d.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.d.ts',
+        'src/extension.ts', // Requires VS Code integration testing
+        'src/connections/connectionManager.ts', // Requires VS Code integration testing
+        'src/execution/queryExecutor.ts', // HTTP functions require network mocking
+      ],
       thresholds: {
         lines: 80,
         functions: 80,
@@ -22,7 +29,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      vscode: './test/mocks/vscode.ts',
+      vscode: path.resolve(__dirname, 'test/mocks/vscode.ts'),
     },
   },
 });

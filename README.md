@@ -35,7 +35,7 @@ Press F5 to launch the Extension Development Host.
 
 Create a new file with the `.osdev` extension:
 
-```
+```json
 // Get cluster health
 GET /_cluster/health
 

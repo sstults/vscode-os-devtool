@@ -1,0 +1,39 @@
+# Source files (we use bundled dist/)
+src/**
+!src/
+
+# Test files
+test/**
+**/*.test.ts
+vitest.config.ts
+tsconfig.test.json
+coverage/**
+
+# Development files
+.vscode/**
+.github/**
+.eslintrc.json
+.prettierrc
+.gitignore
+.AGENTS
+tsconfig.json
+esbuild.config.js
+
+# Node modules (bundled into dist/)
+node_modules/**
+
+# Build artifacts
+*.vsix
+
+# Documentation (keep README)
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Git
+.git/**
+.gitattributes
+
+# Other
+**/*.map
+*.log
+.DS_Store

@@ -50,14 +50,12 @@ src/
 The `.osdev` file format follows OpenSearch DevTools console format:
 
 ```
-// Single line comment
-/* Multi-line
-   comment */
+# Single line comment
 
-// Simple GET request
+# Simple GET request
 GET /_cat/indices?v
 
-// POST with JSON body
+# POST with JSON body
 POST /my-index/_search
 {
   "query": {
@@ -67,7 +65,7 @@ POST /my-index/_search
   }
 }
 
-// PUT request
+# PUT request
 PUT /my-index
 {
   "settings": {
@@ -80,7 +78,7 @@ PUT /my-index
 1. Lines starting with HTTP method (GET, POST, PUT, DELETE, HEAD, PATCH) begin a new request
 2. The path follows the method on the same line
 3. JSON body (if any) follows on subsequent lines until the next request or end of file
-4. Comments are `//` for single line, `/* */` for multi-line
+4. Comments start with `#`
 5. Blank lines are ignored
 
 ---
@@ -257,7 +255,7 @@ vscode.languages.registerHoverProvider('osdev', hoverProvider);
 
 // Language configuration
 vscode.languages.setLanguageConfiguration('osdev', {
-  comments: { lineComment: '//', blockComment: ['/*', '*/'] },
+  comments: { lineComment: '#' },
   brackets: [['{', '}'], ['[', ']']],
   autoClosingPairs: [
     { open: '{', close: '}' },
