@@ -18,6 +18,13 @@ A VS Code extension that provides an OpenSearch DevTools-like experience, allowi
 
 Search for "OpenSearch DevTools" in the VS Code Extensions view.
 
+### From VSIX Package
+
+1. Download the `.vsix` file from the [Releases](https://github.com/sstults/vscode-os-devtool/releases) page
+2. In VS Code, open the Extensions view (`Cmd+Shift+X` / `Ctrl+Shift+X`)
+3. Click the `...` menu (top-right) and select "Install from VSIX..."
+4. Select the downloaded `.vsix` file
+
 ### From Source
 
 ```bash
@@ -27,7 +34,13 @@ npm install
 npm run build
 ```
 
-Press F5 to launch the Extension Development Host.
+**To run in development mode:** Press F5 to launch the Extension Development Host.
+
+**To package and install locally:**
+```bash
+npm run package
+```
+This creates `vscode-opensearch-devtools-0.1.0.vsix`. Install it via the "Install from VSIX..." option in VS Code.
 
 ## Usage
 
@@ -87,7 +100,7 @@ Results appear in the OpenSearch output panel.
 
 The `.osdev` file format follows the OpenSearch DevTools console format:
 
-```
+```json
 // Comments start with //
 /* Or use block comments */
 
