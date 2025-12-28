@@ -18,8 +18,14 @@ function createMockDocument(lines: string[]): vscode.TextDocument {
     lineAt: (line: number) => ({
       text: lines[line] || '',
       lineNumber: line,
-      range: new vscode.Range(new vscode.Position(line, 0), new vscode.Position(line, (lines[line] || '').length)),
-      rangeIncludingLineBreak: new vscode.Range(new vscode.Position(line, 0), new vscode.Position(line + 1, 0)),
+      range: new vscode.Range(
+        new vscode.Position(line, 0),
+        new vscode.Position(line, (lines[line] || '').length)
+      ),
+      rangeIncludingLineBreak: new vscode.Range(
+        new vscode.Position(line, 0),
+        new vscode.Position(line + 1, 0)
+      ),
       firstNonWhitespaceCharacterIndex: 0,
       isEmptyOrWhitespace: !(lines[line] || '').trim(),
     }),

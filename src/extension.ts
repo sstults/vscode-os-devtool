@@ -8,7 +8,12 @@ import { ConnectionManager } from './connections/connectionManager';
 import { StoredConnection, AuthType } from './connections/connectionTypes';
 import { registerCompletionProvider } from './language/completionProvider';
 import { parseOsdevFile, findRequestAtLine } from './language/parser';
-import { executeRequest, executeRequests, testConnection, ExecuteOptions } from './execution/queryExecutor';
+import {
+  executeRequest,
+  executeRequests,
+  testConnection,
+  ExecuteOptions,
+} from './execution/queryExecutor';
 import { OutputPanel } from './execution/outputPanel';
 import { AWS_REGIONS } from './connections/awsAuth';
 
@@ -111,7 +116,9 @@ async function getExecuteOptions(): Promise<ExecuteOptions | undefined> {
   if (connection.authType === 'basic') {
     const password = await connectionManager.getPassword(connection.id);
     if (!password) {
-      await vscode.window.showErrorMessage('Password not found for this connection. Please edit the connection.');
+      await vscode.window.showErrorMessage(
+        'Password not found for this connection. Please edit the connection.'
+      );
       return undefined;
     }
     options.password = password;
@@ -137,7 +144,9 @@ async function executeCurrentRequest(): Promise<void> {
   }
 
   const options = await getExecuteOptions();
-  if (!options) {return;}
+  if (!options) {
+    return;
+  }
 
   const content = editor.document.getText();
   const parseResult = parseOsdevFile(content);
@@ -176,7 +185,9 @@ async function executeAllRequests(): Promise<void> {
   }
 
   const options = await getExecuteOptions();
-  if (!options) {return;}
+  if (!options) {
+    return;
+  }
 
   const content = editor.document.getText();
   const parseResult = parseOsdevFile(content);
@@ -215,19 +226,27 @@ async function addConnection(): Promise<void> {
     prompt: 'Enter a name for this connection',
     placeHolder: 'My OpenSearch Cluster',
     validateInput: (value) => {
-      if (!value.trim()) {return 'Name is required';}
-      if (connectionManager.connectionNameExists(value)) {return 'A connection with this name already exists';}
+      if (!value.trim()) {
+        return 'Name is required';
+      }
+      if (connectionManager.connectionNameExists(value)) {
+        return 'A connection with this name already exists';
+      }
       return undefined;
     },
   });
-  if (!name) {return;}
+  if (!name) {
+    return;
+  }
 
   // Step 2: URL
   const url = await vscode.window.showInputBox({
     prompt: 'Enter the OpenSearch cluster URL',
     placeHolder: 'https://localhost:9200',
     validateInput: (value) => {
-      if (!value.trim()) {return 'URL is required';}
+      if (!value.trim()) {
+        return 'URL is required';
+      }
       try {
         new URL(value);
         return undefined;
@@ -236,17 +255,25 @@ async function addConnection(): Promise<void> {
       }
     },
   });
-  if (!url) {return;}
+  if (!url) {
+    return;
+  }
 
   // Step 3: Auth type
   const authType = await vscode.window.showQuickPick(
     [
-      { label: 'Basic Authentication', value: 'basic' as AuthType, description: 'Username and password' },
+      {
+        label: 'Basic Authentication',
+        value: 'basic' as AuthType,
+        description: 'Username and password',
+      },
       { label: 'AWS IAM', value: 'aws-iam' as AuthType, description: 'AWS Signature V4' },
     ],
     { placeHolder: 'Select authentication type' }
   );
-  if (!authType) {return;}
+  if (!authType) {
+    return;
+  }
 
   let username: string | undefined;
   let password: string | undefined;
@@ -261,31 +288,47 @@ async function addConnection(): Promise<void> {
       prompt: 'Enter username',
       placeHolder: 'admin',
     });
-    if (!username) {return;}
+    if (!username) {
+      return;
+    }
 
     password = await vscode.window.showInputBox({
       prompt: 'Enter password',
       password: true,
     });
-    if (!password) {return;}
+    if (!password) {
+      return;
+    }
   } else {
     // AWS IAM: get region and optionally profile/credentials
     const regionPick = await vscode.window.showQuickPick(
       AWS_REGIONS.map((r) => ({ label: r, value: r })),
       { placeHolder: 'Select AWS region' }
     );
-    if (!regionPick) {return;}
+    if (!regionPick) {
+      return;
+    }
     awsRegion = regionPick.value;
 
     const credentialMethod = await vscode.window.showQuickPick(
       [
         { label: 'Use AWS Profile', value: 'profile', description: 'From ~/.aws/credentials' },
-        { label: 'Use Default Credential Chain', value: 'default', description: 'Environment variables, instance profile, etc.' },
-        { label: 'Enter Access Keys', value: 'keys', description: 'Manually enter access key and secret' },
+        {
+          label: 'Use Default Credential Chain',
+          value: 'default',
+          description: 'Environment variables, instance profile, etc.',
+        },
+        {
+          label: 'Enter Access Keys',
+          value: 'keys',
+          description: 'Manually enter access key and secret',
+        },
       ],
       { placeHolder: 'How should credentials be obtained?' }
     );
-    if (!credentialMethod) {return;}
+    if (!credentialMethod) {
+      return;
+    }
 
     if (credentialMethod.value === 'profile') {
       awsProfile = await vscode.window.showInputBox({
@@ -293,19 +336,25 @@ async function addConnection(): Promise<void> {
         placeHolder: 'default',
         value: 'default',
       });
-      if (!awsProfile) {return;}
+      if (!awsProfile) {
+        return;
+      }
     } else if (credentialMethod.value === 'keys') {
       awsAccessKey = await vscode.window.showInputBox({
         prompt: 'Enter AWS Access Key ID',
         placeHolder: 'AKIA...',
       });
-      if (!awsAccessKey) {return;}
+      if (!awsAccessKey) {
+        return;
+      }
 
       awsSecretKey = await vscode.window.showInputBox({
         prompt: 'Enter AWS Secret Access Key',
         password: true,
       });
-      if (!awsSecretKey) {return;}
+      if (!awsSecretKey) {
+        return;
+      }
     }
   }
 
@@ -317,7 +366,9 @@ async function addConnection(): Promise<void> {
     ],
     { placeHolder: 'SSL certificate verification' }
   );
-  if (sslVerify === undefined) {return;}
+  if (sslVerify === undefined) {
+    return;
+  }
 
   // Step 5: Custom CA cert (optional)
   let caCertPath: string | undefined;
@@ -399,7 +450,9 @@ async function editConnection(): Promise<void> {
     })),
     { placeHolder: 'Select connection to edit' }
   );
-  if (!selected) {return;}
+  if (!selected) {
+    return;
+  }
 
   const conn = selected.connection;
 
@@ -408,18 +461,26 @@ async function editConnection(): Promise<void> {
     prompt: 'Connection name',
     value: conn.name,
     validateInput: (value) => {
-      if (!value.trim()) {return 'Name is required';}
-      if (connectionManager.connectionNameExists(value, conn.id)) {return 'A connection with this name already exists';}
+      if (!value.trim()) {
+        return 'Name is required';
+      }
+      if (connectionManager.connectionNameExists(value, conn.id)) {
+        return 'A connection with this name already exists';
+      }
       return undefined;
     },
   });
-  if (!newName) {return;}
+  if (!newName) {
+    return;
+  }
 
   const newUrl = await vscode.window.showInputBox({
     prompt: 'OpenSearch cluster URL',
     value: conn.url,
     validateInput: (value) => {
-      if (!value.trim()) {return 'URL is required';}
+      if (!value.trim()) {
+        return 'URL is required';
+      }
       try {
         new URL(value);
         return undefined;
@@ -428,7 +489,9 @@ async function editConnection(): Promise<void> {
       }
     },
   });
-  if (!newUrl) {return;}
+  if (!newUrl) {
+    return;
+  }
 
   // Update password if basic auth
   let newPassword: string | undefined;
@@ -449,11 +512,7 @@ async function editConnection(): Promise<void> {
   }
 
   try {
-    await connectionManager.updateConnection(
-      conn.id,
-      { name: newName, url: newUrl },
-      newPassword
-    );
+    await connectionManager.updateConnection(conn.id, { name: newName, url: newUrl }, newPassword);
     await vscode.window.showInformationMessage(`Connection "${newName}" updated successfully`);
   } catch (error) {
     await vscode.window.showErrorMessage(
@@ -480,14 +539,18 @@ async function deleteConnection(): Promise<void> {
     })),
     { placeHolder: 'Select connection to delete' }
   );
-  if (!selected) {return;}
+  if (!selected) {
+    return;
+  }
 
   const confirm = await vscode.window.showWarningMessage(
     `Are you sure you want to delete "${selected.connection.name}"?`,
     { modal: true },
     'Delete'
   );
-  if (confirm !== 'Delete') {return;}
+  if (confirm !== 'Delete') {
+    return;
+  }
 
   try {
     await connectionManager.deleteConnection(selected.connection.id);
@@ -536,7 +599,9 @@ async function switchConnection(): Promise<void> {
     placeHolder: 'Select connection',
   });
 
-  if (!selected) {return;}
+  if (!selected) {
+    return;
+  }
 
   if (!selected.connection) {
     await addConnection();
@@ -552,7 +617,9 @@ async function switchConnection(): Promise<void> {
  */
 async function testCurrentConnection(): Promise<void> {
   const options = await getExecuteOptions();
-  if (!options) {return;}
+  if (!options) {
+    return;
+  }
 
   outputPanel.show();
   outputPanel.showInfo(`Testing connection to ${options.connection.url}...`);

@@ -297,7 +297,9 @@ export function formatQueryResult(
     lines.push(`# ERROR: ${result.error}`);
   } else {
     const statusEmoji = result.success ? '✓' : '✗';
-    lines.push(`# ${statusEmoji} ${result.statusCode} ${result.statusMessage} (${result.durationMs}ms)`);
+    lines.push(
+      `# ${statusEmoji} ${result.statusCode} ${result.statusMessage} (${result.durationMs}ms)`
+    );
   }
   lines.push('');
 

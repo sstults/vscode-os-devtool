@@ -28,7 +28,11 @@ export const COMMON_ENDPOINTS: EndpointDefinition[] = [
   { path: '/_cluster/health', methods: ['GET'], description: 'Get cluster health status' },
   { path: '/_cluster/state', methods: ['GET'], description: 'Get cluster state' },
   { path: '/_cluster/stats', methods: ['GET'], description: 'Get cluster statistics' },
-  { path: '/_cluster/settings', methods: ['GET', 'PUT'], description: 'Get/update cluster settings' },
+  {
+    path: '/_cluster/settings',
+    methods: ['GET', 'PUT'],
+    description: 'Get/update cluster settings',
+  },
   { path: '/_cluster/pending_tasks', methods: ['GET'], description: 'Get pending cluster tasks' },
 
   // Cat APIs
@@ -346,9 +350,15 @@ export class OsdevCompletionProvider implements vscode.CompletionItemProvider {
 /**
  * Create and register the completion provider
  */
-export function registerCompletionProvider(
-  _context: vscode.ExtensionContext
-): vscode.Disposable {
+export function registerCompletionProvider(_context: vscode.ExtensionContext): vscode.Disposable {
   const provider = new OsdevCompletionProvider();
-  return vscode.languages.registerCompletionItemProvider('osdev', provider, '/', '?', '&', '"', ':');
+  return vscode.languages.registerCompletionItemProvider(
+    'osdev',
+    provider,
+    '/',
+    '?',
+    '&',
+    '"',
+    ':'
+  );
 }

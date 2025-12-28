@@ -10,9 +10,7 @@ import { BasicAuthCredentials } from './connectionTypes';
  * @returns Base64 encoded authorization header value
  */
 export function generateBasicAuthHeader(credentials: BasicAuthCredentials): string {
-  const encoded = Buffer.from(`${credentials.username}:${credentials.password}`).toString(
-    'base64'
-  );
+  const encoded = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64');
   return `Basic ${encoded}`;
 }
 

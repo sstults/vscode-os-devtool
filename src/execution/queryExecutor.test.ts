@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  buildRequestUrl,
-  formatQueryResult,
-  QueryResult,
-} from './queryExecutor';
+import { buildRequestUrl, formatQueryResult, QueryResult } from './queryExecutor';
 import { ParsedRequest } from '../language/parser';
 
 describe('queryExecutor', () => {
